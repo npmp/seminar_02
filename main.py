@@ -160,13 +160,11 @@ class Repressilator:
             t = t + dt
             step = step + 1
 
-            # reshape (flatten) again
-            #A = A.reshape(size ** 2, 1)
-            print(A.shape, A_series.shape, A_full.shape)
-            A_series[step - 1] = A[first_idx - 1]
-            S_e_series[step - 1] = S_e[first_idx - 1]
-            A_full[step - 1][:] = A[first_idx - 1]
+            A_series[0][step - 1] = A[first_idx - 1][first_idx - 1]
+            S_e_series[0][step - 1] = S_e[first_idx - 1][first_idx - 1]
+            A_full[step - 1][:] = A.flatten()[cell_idx]
 
+            print(step)
 
 def repressilator_S_ODE(CELLS, mA, mB, mC, A, B, C, S_i, S_e, alpha, alpha0, Kd, beta, delta_m, delta_p, n, kS0, kS1,
                         kSe, kappa, eta, size):
