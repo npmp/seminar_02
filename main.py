@@ -139,8 +139,16 @@ class Repressilator:
                 dS_e[0:width][0, width] = 0
                 dS_e[0, width][0:width] = 0
 
-            mA = mA + dt * dmA
+            # reshape back to original values (size, size)
+            # TODO: optimise this
+            A = A.reshape(size, size)
+            mA = mA.reshape(size, size)
+            B = B.reshape(size, size)
+            mB = mB.reshape(size, size)
+            C = C.reshape(size, size)
+            mC = mC.reshape(size, size)
 
+            mA = mA + dt * dmA
             mB = mB + dt * dmB
             mC = mC + dt * dmC
             A = A + dt * dA
@@ -152,6 +160,9 @@ class Repressilator:
             t = t + dt
             step = step + 1
 
+            # reshape (flatten) again
+            #A = A.reshape(size ** 2, 1)
+            print(A.shape, A_series.shape, A_full.shape)
             A_series[step - 1] = A[first_idx - 1]
             S_e_series[step - 1] = S_e[first_idx - 1]
             A_full[step - 1][:] = A[first_idx - 1]
@@ -168,6 +179,9 @@ def repressilator_S_ODE(CELLS, mA, mB, mC, A, B, C, S_i, S_e, alpha, alpha0, Kd,
     dB = CELLS * reshape(beta * mB - delta_p * B, (size, size))
     dC = CELLS * reshape(beta * mC - delta_p * C, (size, size))
 
+    # reshape back to original values (size, size)
+    # TODO: only do this once
+    A = A.reshape(size, size)
     dS_i = CELLS * (- kS0 * S_i + kS1 * A - eta * (S_i - S_e))
     dS_e = - kSe * S_e + CELLS * (eta * (S_i - S_e))
 
