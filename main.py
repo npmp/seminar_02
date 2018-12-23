@@ -2,6 +2,7 @@ from __future__ import division
 
 from random import randint, random
 
+from numpy import matrix
 from numpy.ma import ceil, zeros, array
 from numpy.matlib import rand
 
@@ -39,7 +40,6 @@ class Respressilator:
         eta = p.eta
 
         size = p.size
-        print('size', size)
         density = p.density
         n_cells = int(ceil(density * size ** 2))
 
@@ -108,12 +108,14 @@ class Respressilator:
 
         D2S_e = None
 
-        # TODO: fix this
         while t <= t_end:
 
             if (periodic_bounds):
-                S_e_xx = D1 * (array(S_e[:, -1], S_e[:, 1:-2]) + array(S_e[:, 2:-1], S_e[:, 0]) - 2 * S_e) / h2
-                S_e_yy = D1 * (array(S_e[-1][:], S_e[1:-2][:]) + array(S_e[2:-1][:], S_e[0][:]) - 2 * S_e) / h2
+                cols = S_e[0].size - 1
+                rows = S_e[:][0].size - 1
+
+                S_e_xx = D1 * (S_e[:][[cols] + list(range(0, cols))] + S_e[:][list(range(1, cols + 1)) + [0]] - 2 * S_e) / h2
+                S_e_yy = D1 * (S_e[[rows] + list(range(0, rows))][:] + S_e[list(range(1, rows + 1)) + [0]][:] - 2 * S_e) / h2
             else:
                 # Create padded matrix to incorporate Neumann boundary conditions
                 SS_e = array(array(0, S_e[1][:], 0), array(S_e[:][1], S_e, S_e[:][-2]), array(0, S_e[-2][:], 0))
@@ -125,14 +127,14 @@ class Respressilator:
             D2S_e = S_e_xx + S_e_yy
 
             # Calculate dx / dt
-            dmA, dmB, dmC, dA, dB, dC, dS_i, dS_e = repressilator_S_ODE(CELLS, mA, mB, mC, A, B, C, S_i, S_e, alpha, alpha0,
-                                                                        Kd, beta, delta_m, delta_p, n, kS0, kS1, kSe, kappa,
-                                                                        eta)
+            dmA, dmB, dmC, dA, dB, dC, dS_i, dS_e = repressilator_S_ODE(CELLS, mA, mB, mC, A, B, C, S_i, S_e, alpha,
+                                                                        alpha0, Kd, beta, delta_m, delta_p, n, kS0, kS1,
+                                                                        kSe, kappa, eta)
 
             dS_e = dS_e + D2S_e
 
             if (borderfixed == 1):
-                # leave border as distrotion centers
+                # leave border as distortion centers
                 width = len(dS_e)
                 dS_e[0:width][0, width] = 0
                 dS_e[0, width][0:width] = 0
