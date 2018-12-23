@@ -2,14 +2,14 @@ from __future__ import division
 
 from random import randint, random
 
-from numpy import matrix
+from numpy import matrix, reshape
 from numpy.ma import ceil, zeros, array
 from numpy.matlib import rand
 
 from params import Params
 
 
-class Respressilator:
+class Repressilator:
 
     def run(self):
         # ali rob predstavlja konec prostora ali so meje neskončne?
@@ -129,7 +129,7 @@ class Respressilator:
             # Calculate dx / dt
             dmA, dmB, dmC, dA, dB, dC, dS_i, dS_e = repressilator_S_ODE(CELLS, mA, mB, mC, A, B, C, S_i, S_e, alpha,
                                                                         alpha0, Kd, beta, delta_m, delta_p, n, kS0, kS1,
-                                                                        kSe, kappa, eta)
+                                                                        kSe, kappa, eta, size)
 
             dS_e = dS_e + D2S_e
 
@@ -157,14 +157,16 @@ class Respressilator:
             A_full[step - 1][:] = A[first_idx - 1]
 
 
-def repressilator_S_ODE(CELLS, mA, mB, mC, A, B, C, S_i, S_e, alpha, alpha0, Kd, beta, delta_m, delta_p, n, kS0, kS1, kSe, kappa, eta):
-    dmA = CELLS * (alpha / (1 + (C / Kd) ** n) + alpha0 - delta_m * mA)
-    dmB = CELLS * (alpha / (1 + (A / Kd) ** n) + alpha0 - delta_m * mB)
-    dmC = CELLS * (alpha / (1 + (B / Kd) ** n) + alpha0 - delta_m * mC + (kappa * S_i) / (1 + S_i))
+def repressilator_S_ODE(CELLS, mA, mB, mC, A, B, C, S_i, S_e, alpha, alpha0, Kd, beta, delta_m, delta_p, n, kS0, kS1,
+                        kSe, kappa, eta, size):
 
-    dA = CELLS * (beta * mA - delta_p * A)
-    dB = CELLS * (beta * mB - delta_p * B)
-    dC = CELLS * (beta * mC - delta_p * C)
+    dmA = CELLS * reshape(alpha / (1 + (C / Kd) ** n) + alpha0 - delta_m * mA, (size, size))
+    dmB = CELLS * reshape(alpha / (1 + (A / Kd) ** n) + alpha0 - delta_m * mB, (size, size))
+    dmC = CELLS * (reshape(alpha / (1 + (B / Kd) ** n) + alpha0 - delta_m * mC, (size, size)) + (kappa * S_i) / (1 + S_i))
+
+    dA = CELLS * reshape(beta * mA - delta_p * A, (size, size))
+    dB = CELLS * reshape(beta * mB - delta_p * B, (size, size))
+    dC = CELLS * reshape(beta * mC - delta_p * C, (size, size))
 
     dS_i = CELLS * (- kS0 * S_i + kS1 * A - eta * (S_i - S_e))
     dS_e = - kSe * S_e + CELLS * (eta * (S_i - S_e))
@@ -172,5 +174,5 @@ def repressilator_S_ODE(CELLS, mA, mB, mC, A, B, C, S_i, S_e, alpha, alpha0, Kd,
     return dmA, dmB, dmC, dA, dB, dC, dS_i, dS_e
 
 if __name__ == "__main__":
-    resp = Respressilator()
-    resp.run()
+    rep = Repressilator()
+    rep.run()
